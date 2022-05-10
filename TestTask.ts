@@ -95,55 +95,6 @@ class Booster {
     this.second_volume = settings.second_volume;
     } 
 
-    getBoosterLoot_1(playerInventory: IInventory): Item[] {
-        //цикл1
-        let i: number = 2;//пока вместо рандома
-        //задумка: пока оба объёма есть мы чекаем на принадлежность к любом из них, затем чемкаем какой конкретно
-        //и затем режем соответсвующий объём
-        //как только один из них выходит мы чекаем только на принадлежность к нему
-        while((this.base_volume == 0)||(this.second_volume == 0)){
-            //генерация i
-            i = getRandomItem();
-            if((itemsBase[i].rarity == this.rarity)||(itemsBase[i].rarity == this.rarity+1)){
-            playerInventory[i]++;
-            if(itemsBase[i].rarity == this.rarity)
-                this.base_volume--;
-            else
-                this.second_volume--;
-            this.all_volume--;
-            }
-        }
-        //проводим проверку на принадлежность к одной категории, нет смысла проверять все
-        while(this.base_volume == 0){
-            //генерация i
-            i = getRandomItem();
-            if(itemsBase[i].rarity == this.rarity)
-            {
-                playerInventory[i]++;
-                this.base_volume--;
-                this.all_volume--;
-            }
-
-        }
-        while(this.second_volume == 0){
-            //генерация i
-            i = getRandomItem();
-            if(itemsBase[i].rarity == this.rarity-1)
-            {
-                playerInventory[i]++;
-                this.second_volume--;
-                this.all_volume--;
-            }
-        }
-
-         //два цикла. Первый цикл выполняется для основной редкости предметов, второй - для дополнительной
-        //рандомно выбирается число от 1 до 32. Далее находят из словаря такой же предмет как число, 
-        //смотрят на его редкость, 
-        //если совпала - включают в интвентарь. Если нет - по-новой. Затем редкость инкрементируется, 
-        //заходим в новый цикл 
-        return Array [1];
-    } 
-
     AddItemFromBooster(rarityID: number, counter: number, ThisFunktion: Item[]){
         this.base_volume--;
         ThisFunktion[counter] = Item[rarityID];
