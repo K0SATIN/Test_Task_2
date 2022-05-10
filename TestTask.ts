@@ -95,12 +95,11 @@ class Booster {
     this.second_volume = settings.second_volume;
     } 
 
-    AddItemFromBooster(rarityID: number, counter: number, ThisFunktion: Item[]){
-        this.base_volume--;
-        ThisFunktion[counter] = Item[rarityID];
+    AddItemFromBooster(volume: number, rarityID: number, counter: number, ThisFunktion: Item[]){
+        volume--;
+        ThisFunktion[counter] = itemsBase[rarityID];
         counter++;
     }
-
     getBoosterLoot_2(playerInventory: IInventory): Item[] {
         let counter : number = 0;
         let i: number;
@@ -108,14 +107,10 @@ class Booster {
         while((this.base_volume == 0)&&(this.second_volume == 0)){
             i = getRandomItem(32);
             if(itemsBase[i].rarity == this.rarity){
-                this.base_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
             }
             if(itemsBase[i].rarity == this.rarity+1){
-                this.second_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
             }          
         }
         return ThisFunktion;
@@ -145,14 +140,10 @@ getBoosterLoot_2(playerInventory: IInventory): Item[]{
             }
             i = getRandomItem(32);
             if(itemsBase[i].rarity == this.rarity+GetLucktChose){
-                this.base_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
             }
             if(itemsBase[i].rarity == this.rarity+1+GetLucktChose){
-                this.second_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
             }          
         }
         return ThisFunktion;
@@ -191,14 +182,10 @@ class UniformBooster extends LuckBooster {
             }
             i = getRandomItem(32);
             if((itemsBase[i].rarity == this.rarity+GetLucktChose)&&(itemsBase[i].itemType)){
-                this.base_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
             }
             if((itemsBase[i].rarity == this.rarity+1+GetLucktChose)&&(itemsBase[i].itemType)){
-                this.second_volume--;
-                ThisFunktion[counter] = Item[i];
-                counter++;
+                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
             }          
         }
         return ThisFunktion;
