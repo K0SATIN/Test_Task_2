@@ -72,8 +72,6 @@ enum RARITY {
 
 
 // Интерфейс инвентаря. Ключ - ID предмета, значение - количество экземпляров этого предмета в инвентаре
-//это, короче, типа массив как выше база предметов. индексы соответствуют айдишникам предмета а значение числу
-//данных единиц в инвентаре.  
 interface IInventory { 
 [key: number]: number 
 } 
@@ -114,8 +112,7 @@ class Booster {
             }          
         }
         return ThisFunktion;
-    }        
-
+    }      
 }
 
 interface ILuckBoosterSettings extends IBoosterSettings {
@@ -162,31 +159,30 @@ class UniformBooster extends LuckBooster {
         }
         let ThisFunktion: Item[] = new Item[this.base_volume+this.second_volume];
 
-        for(let j: number = 0; j<4; j++){
-            let UniformFixer: boolean[] = [false, false, false, false];
-            //генерация предмета, чекаем его тип, если подходит то меняем соответсвующий индекс в массиве,
-            //если нет - отправляем на новую генерацию
-            i = getRandomItem(32);
-
-            if(UniformFixer[itemsBase[i].itemType] == false){
+        while((this.base_volume == 0)&&(this.second_volume == 0)){            
+            for(let j: number = 0; j<4;){
+                let UniformFixer: boolean[] = [false, false, false, false];
+             //генерация предмета, чекаем его тип, если подходит то меняем соответсвующий индекс в массиве,
+             //если нет - отправляем на новую генерацию
+                i = getRandomItem(32);
+                if(UniformFixer[itemsBase[i].itemType] == false){
                 //код
-                UniformFixer[itemsBase[i].itemType] = true;
-            }
-
-        }
-
-        while((this.base_volume == 0)&&(this.second_volume == 0)){
-            let GetLucktChose: number = 0;
-            if(Math.random()< this.luckyChans){
-                GetLucktChose = 1;
-            }
-            i = getRandomItem(32);
-            if((itemsBase[i].rarity == this.rarity+GetLucktChose)&&(itemsBase[i].itemType)){
-                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
-            }
-            if((itemsBase[i].rarity == this.rarity+1+GetLucktChose)&&(itemsBase[i].itemType)){
-                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
-            }          
+                    let GetLucktChose: number = 0;
+                    if(Math.random()< this.luckyChans){
+                        GetLucktChose = 1;
+                    }
+                    if(itemsBase[i].rarity == this.rarity+GetLucktChose){
+                        this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
+                        j++;
+                        UniformFixer[itemsBase[i].itemType] = true;
+                    }
+                    if(itemsBase[i].rarity == this.rarity+1+GetLucktChose){
+                        this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
+                        j++;
+                        UniformFixer[itemsBase[i].itemType] = true;
+                    }
+                }
+            }         
         }
         return ThisFunktion;
     }
@@ -196,6 +192,13 @@ let boostersBase = {
     1: new Booster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2}),
     2: new Booster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3}), 
     3: new LuckBooster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2, luckyChans: 0.10}),
-    4: new LuckBooster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3, luckyChans: 0.45})
+    4: new LuckBooster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3, luckyChans: 0.45}),
+    5: new UniformBooster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2, luckyChans: 0.10}),
+    6: new UniformBooster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3, luckyChans: 0.45})
     // пример добавления экземпляра бустерпака 
 };
+
+function getBoosterLoot(boosterID: number, playerInventory: IInventory): Item[] {    
+    return boostersBase[boosterID].getBoosterLoot(playerInventory);
+    //return boosters[boosterID].getBoosterLoot(playerInventory); 
+} 
