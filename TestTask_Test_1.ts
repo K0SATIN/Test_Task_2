@@ -19,7 +19,7 @@ enum RARITY {
     }
 
     function getRandomItem(I : number) {
-        return Math.floor(Math.random()*(I - 1) + 1);
+        return Math.random()*(I - 1) + 1;
       }
 
     class Item {
@@ -75,7 +75,6 @@ enum RARITY {
 interface IInventory { 
 [key: number]: number 
 } 
-
 // Настройки простого бустерпака 
 interface IBoosterSettings { 
 rarity: RARITY;
@@ -87,41 +86,32 @@ second_volume: number;
 class Booster { 
     rarity: RARITY;
     base_volume: number;
-    second_volume: number;
-    ThisFunktion: Item[]; 
+    second_volume: number; 
     constructor(settings: IBoosterSettings) { 
     this.rarity = settings.rarity;
     this.base_volume = settings.base_volume;
     this.second_volume = settings.second_volume;
-    this.ThisFunktion = new Array(this.base_volume+this.second_volume);
     } 
 
-    AddItemFromBooster(volume: number, rarityID: number, counter: number){
+    AddItemFromBooster(volume: number, rarityID: number, counter: number, ThisFunktion: Item[]){
         volume--;
+        ThisFunktion[counter] = itemsBase[rarityID];
         counter++;
     }
-
     getBoosterLoot(playerInventory: IInventory): Item[] {
         let counter : number = 0;
         let i: number;
-        while((this.base_volume+this.second_volume > 0)){
+        let ThisFunktion: Item[] = new Item[this.base_volume+this.second_volume];
+        while((this.base_volume == 0)&&(this.second_volume == 0)){
             i = getRandomItem(32);
-            if((itemsBase[i].rarity == this.rarity)&&(this.base_volume > 0)){
-                this.base_volume--;
-                this.ThisFunktion[counter] = itemsBase[i];
-                counter++;
-                playerInventory[i]++;
-                //console.log('Add_raryty '+this.base_volume);
+            if(itemsBase[i].rarity == this.rarity){
+                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
             }
-            if((itemsBase[i].rarity == this.rarity+1)&&(this.second_volume > 0)){
-                this.second_volume--;
-                this.ThisFunktion[counter] = itemsBase[i];
-                counter++;
-                playerInventory[i]++;
-                //console.log('Add_raryty+1 ' +this.second_volume);
+            if(itemsBase[i].rarity == this.rarity+1){
+                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
             }          
         }
-        return this.ThisFunktion;
+        return ThisFunktion;
     }      
 }
 
@@ -129,10 +119,82 @@ interface ILuckBoosterSettings extends IBoosterSettings {
     luckyChans: number;
 } 
 // Класс бустерпака удачи 
+class LuckBooster extends Booster { 
+luckyChans: number;
+constructor (settings: ILuckBoosterSettings) {
+    super(Booster.arguments);
+    this.luckyChans = settings.luckyChans;
+} 
+
+getBoosterLoot(playerInventory: IInventory): Item[]{
+    let counter : number = 0;
+        let i: number;
+        let ThisFunktion: Item[] = new Item[this.base_volume+this.second_volume];
+        while((this.base_volume == 0)&&(this.second_volume == 0)){
+            let GetLucktChose: number = 0;
+            if(Math.random()< this.luckyChans){
+                GetLucktChose = 1;
+            }
+            i = getRandomItem(32);
+            if(itemsBase[i].rarity == this.rarity+GetLucktChose){
+                this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
+            }
+            if(itemsBase[i].rarity == this.rarity+1+GetLucktChose){
+                this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
+            }          
+        }
+        return ThisFunktion;
+}
+} 
+
+class UniformBooster extends LuckBooster { 
+    constructor (settings: ILuckBoosterSettings) {
+        super(LuckBooster.arguments);
+    }    
+    getBoosterLoot(playerInventory: IInventory): Item[]{
+        let counter : number = 0;
+        let i: number;
+        if(this.base_volume+this.second_volume <4){
+            throw new Error('Равномерный бустер не может быть меньше четырёх');
+        }
+        let ThisFunktion: Item[] = new Item[this.base_volume+this.second_volume];
+
+        while((this.base_volume == 0)&&(this.second_volume == 0)){            
+            for(let j: number = 0; j<4;){
+                let UniformFixer: boolean[] = [false, false, false, false];
+             //генерация предмета, чекаем его тип, если подходит то меняем соответсвующий индекс в массиве,
+             //если нет - отправляем на новую генерацию
+                i = getRandomItem(32);
+                if(UniformFixer[itemsBase[i].itemType] == false){
+                //код
+                    let GetLucktChose: number = 0;
+                    if(Math.random()< this.luckyChans){
+                        GetLucktChose = 1;
+                    }
+                    if(itemsBase[i].rarity == this.rarity+GetLucktChose){
+                        this.AddItemFromBooster(this.base_volume, i, counter, ThisFunktion);
+                        j++;
+                        UniformFixer[itemsBase[i].itemType] = true;
+                    }
+                    if(itemsBase[i].rarity == this.rarity+1+GetLucktChose){
+                        this.AddItemFromBooster(this.second_volume, i, counter, ThisFunktion);
+                        j++;
+                        UniformFixer[itemsBase[i].itemType] = true;
+                    }
+                }
+            }         
+        }
+        return ThisFunktion;
+    }
+    } 
 
 let boostersBase = { 
     1: new Booster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2}),
     2: new Booster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3}), 
+    3: new LuckBooster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2, luckyChans: 0.10}),
+    4: new LuckBooster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3, luckyChans: 0.45}),
+    5: new UniformBooster({rarity: RARITY.RARE, base_volume : 3, second_volume: 2, luckyChans: 0.10}),
+    6: new UniformBooster({rarity: RARITY.LEGENDARY, base_volume : 1, second_volume: 3, luckyChans: 0.45})
     // пример добавления экземпляра бустерпака 
 };
 
@@ -140,18 +202,5 @@ function getBoosterLoot(boosterID: number, playerInventory: IInventory): Item[] 
     return boostersBase[boosterID].getBoosterLoot(playerInventory);
     //return boosters[boosterID].getBoosterLoot(playerInventory); 
 }
-let SomeInventory_1: IInventory = {}
-for(let i: number = 1; i<33; i++){
-    SomeInventory_1[i] = 0;
-}
 
-
-getBoosterLoot(1, SomeInventory_1);
-let j: number = 0;
-for(let i: number = 1; i<33; i++){
-    console.log(SomeInventory_1[i]);
-    j+=SomeInventory_1[i];
-}
-console.log('j');
-console.log(j);
-//*/
+console.log(1111);
