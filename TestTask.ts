@@ -123,7 +123,6 @@ class Booster {
 interface ILuckBoosterSettings extends IBoosterSettings {
     luckyChans: number;
 } 
-// Класс бустерпака удачи 
 
 class LuckBooster extends Booster { 
 luckyChans: number;
@@ -132,14 +131,24 @@ constructor (settings: ILuckBoosterSettings) {
     this.luckyChans = settings.luckyChans;
 } 
 
+ValumeLucktChose(rarity: RARITY, luckyChans: number): number{
+    let GetLucktChose: number = 0;
+    let StandartluckyChans = luckyChans;
+    let ExecutionLucktChose: number = Math.random();
+    for(let i: number = rarity; i<3; i++){
+        if(ExecutionLucktChose < StandartluckyChans){
+            GetLucktChose++;
+        }
+        StandartluckyChans = Math.pow(luckyChans, GetLucktChose+1)
+    }
+    return GetLucktChose;
+}
+
 getBoosterLoot(playerInventory: IInventory): Item[]{
     let counter : number = 0;
         let i: number;
         while((this.base_volume+this.second_volume > 0)){
-            let GetLucktChose: number = 0;
-            if(Math.random()< this.luckyChans){
-                GetLucktChose = 1;
-            }
+            let GetLucktChose: number  = this.ValumeLucktChose(this.rarity, this.luckyChans);
             i = getRandomItem(32);
             if((itemsBase[i].rarity == this.rarity+GetLucktChose)&&(this.base_volume > 0)){
                 this.base_volume--;
@@ -170,27 +179,22 @@ class UniformBooster extends LuckBooster {
         if(this.base_volume+this.second_volume <4){
             throw new Error('Равномерный бустер не может быть меньше четырёх');
         }
-        while((this.base_volume+this.second_volume > 0)){ 
-            let UniformTrafaret: boolean[] = [false, false, false, false];          
-            for(let j: number = 0; j<4;){
-                if(this.base_volume+this.second_volume > 0){
-                    j = 4;
-                }
+        let UniformTrafaret: boolean[] = [false, false, false, false]; 
+        let j: number = 0; 
+        while((this.base_volume+this.second_volume > 0)){         
                 //console.log(j);
                 i = getRandomItem(32);
-                if(UniformTrafaret[itemsBase[i].itemType] == false){
-                    let GetLucktChose: number = 0;
-                    if(Math.random()< this.luckyChans){
-                        GetLucktChose = 1;
-                    }
+                if((UniformTrafaret[itemsBase[i].itemType] == false)||(j==4)){
+                    let GetLucktChose: number  = this.ValumeLucktChose(this.rarity, this.luckyChans);
                     if((itemsBase[i].rarity == this.rarity+GetLucktChose)&&(this.base_volume > 0)){
                         this.base_volume--;
                         this.ThisFunktion[counter] = itemsBase[i];
                         counter++;
                         playerInventory[i]++;
                         j++;
+                        console.log('Add_raryty '+ this.base_volume +', raryti '+itemsBase[i].rarity+' Item Type '+itemsBase[i].itemType
+                        +' ItemType is exist '+ UniformTrafaret[itemsBase[i].itemType] );
                         UniformTrafaret[itemsBase[i].itemType] = true;
-                        console.log('Add_raryty '+ this.base_volume +', raryti '+itemsBase[i].rarity);
                     }
                     if((itemsBase[i].rarity == this.rarity+1+GetLucktChose)&&(this.second_volume > 0)){
                         this.second_volume--;
@@ -198,15 +202,82 @@ class UniformBooster extends LuckBooster {
                         counter++;
                         playerInventory[i]++;
                         j++;
+                        console.log('Add_raryty '+ this.base_volume +', raryti '+itemsBase[i].rarity+' Item Type '+itemsBase[i].itemType
+                        +' ItemType is exist '+ UniformTrafaret[itemsBase[i].itemType] );  
                         UniformTrafaret[itemsBase[i].itemType] = true;
-                        console.log('Add_raryty+1 ' +this.second_volume + ', raryti '+itemsBase[i].rarity);
-                    }
-                }
-            }         
+                  }
+                }      
         }
         return this.ThisFunktion;
     }
     }
+
+    class CollectionBooster extends UniformBooster { 
+        constructor (settings: ILuckBoosterSettings) {
+            super(settings);
+        }
+
+        getSizeInventory(playerInventory: IInventory): number{
+            let j: number = 0;
+            for(let i: number = 1; i<33; i++){
+                j+=playerInventory[i];
+            }
+            return j;
+        }
+        FilterByProportion(playerInventory: IInventory, i: number): boolean{
+            let SizeInventory: number = this.getSizeInventory(playerInventory);//общее количество предметов в инвентаре
+            let ItemCount: number = playerInventory[i];
+            if(ItemCount ==0){
+                return true;
+            }
+            else{
+                if( ItemCount/SizeInventory < Math.random())
+                    return true;
+                else
+                    return false;
+            }
+        }
+
+        getBoosterLoot(playerInventory: IInventory): Item[]{
+            let counter : number = 0;
+            let i: number;
+            if(this.base_volume+this.second_volume <4){
+                throw new Error('Равномерный бустер не может быть меньше четырёх');
+            }
+            let UniformTrafaret: boolean[] = [false, false, false, false]; 
+            let j: number = 0;
+            let SizeInventory: number = this.getSizeInventory(playerInventory);
+
+            while((this.base_volume+this.second_volume > 0)){         
+                    //console.log(j);
+                    i = getRandomItem(32);                   
+                    if((UniformTrafaret[itemsBase[i].itemType] == false)||(j==4)&&this.FilterByProportion(playerInventory, i)){
+                        let GetLucktChose: number  = this.ValumeLucktChose(this.rarity, this.luckyChans);
+                        if((itemsBase[i].rarity == this.rarity+GetLucktChose)&&(this.base_volume > 0)){
+                            this.base_volume--;
+                            this.ThisFunktion[counter] = itemsBase[i];
+                            counter++;
+                            playerInventory[i]++;
+                            j++;
+                            console.log('Add_raryty '+ this.base_volume +', raryti '+itemsBase[i].rarity+' Item Type '+itemsBase[i].itemType
+                            +' ItemType is exist '+ UniformTrafaret[itemsBase[i].itemType] );
+                            UniformTrafaret[itemsBase[i].itemType] = true;
+                        }
+                        if((itemsBase[i].rarity == this.rarity+1+GetLucktChose)&&(this.second_volume > 0)){
+                            this.second_volume--;
+                            this.ThisFunktion[counter] = itemsBase[i];
+                            counter++;
+                            playerInventory[i]++;
+                            j++;
+                            console.log('Add_raryty '+ this.base_volume +', raryti '+itemsBase[i].rarity+' Item Type '+itemsBase[i].itemType
+                            +' ItemType is exist '+ UniformTrafaret[itemsBase[i].itemType] );  
+                            UniformTrafaret[itemsBase[i].itemType] = true;
+                      }
+                    }      
+            }
+            return this.ThisFunktion;
+        }
+        }
 
 
 let boostersBase = { 
@@ -230,7 +301,7 @@ for(let i: number = 1; i<33; i++){
     SomeInventory_1[i] = 0;
 }
 
-getBoosterLoot(5, SomeInventory_1);
+getBoosterLoot(3, SomeInventory_1);
 let j: number = 0;
 for(let i: number = 1; i<33; i++){
     //console.log(SomeInventory_1[i]);
