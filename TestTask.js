@@ -81,25 +81,28 @@ var Booster = /** @class */ (function () {
         this.base_volume = settings.base_volume;
         this.second_volume = settings.second_volume;
         this.ThisFunktion = new Array(this.base_volume + this.second_volume);
+        this.fortest_2 = 0;
     }
     Booster.prototype.getBoosterLoot = function (playerInventory) {
         var counter = 0;
         var i;
-        while ((this.base_volume + this.second_volume > 0)) {
+        var local_base_volume = this.base_volume;
+        var local_second_volume = this.second_volume;
+        while ((local_base_volume + local_second_volume > 0)) {
             i = getRandomItem(32);
-            if ((itemsBase[i].rarity == this.rarity) && (this.base_volume > 0)) {
-                this.base_volume--;
+            if ((itemsBase[i].rarity == this.rarity) && (local_base_volume > 0)) {
+                local_base_volume--;
                 this.ThisFunktion[counter] = itemsBase[i];
                 counter++;
                 playerInventory[i]++;
-                console.log('Add_raryty ' + itemsBase[i].rarity);
+                console.log('Add_raryty ' + itemsBase[i].rarity + ' № ' + i);
             }
-            if ((itemsBase[i].rarity == this.rarity + 1) && (this.second_volume > 0)) {
-                this.second_volume--;
+            if ((itemsBase[i].rarity == this.rarity + 1) && (local_second_volume > 0)) {
+                local_second_volume--;
                 this.ThisFunktion[counter] = itemsBase[i];
                 counter++;
                 playerInventory[i]++;
-                console.log('Add_raryty+1 ' + itemsBase[i].rarity);
+                console.log('Add_raryty+1 ' + itemsBase[i].rarity + ' № ' + i);
             }
         }
         return this.ThisFunktion;
@@ -114,36 +117,40 @@ var LuckBooster = /** @class */ (function (_super) {
         return _this;
     }
     LuckBooster.prototype.ValumeLucktChose = function (rarity, luckyChans) {
-        var GetLucktChose = 0;
-        var StandartluckyChans = luckyChans;
-        var ExecutionLucktChose = Math.random();
+        var getLucktChose = 0;
+        var standartluckyChans = luckyChans;
+        var executionLucktChose = Math.random();
         for (var i = rarity; i < 3; i++) {
-            if (ExecutionLucktChose < StandartluckyChans) {
-                GetLucktChose++;
+            if (executionLucktChose < standartluckyChans) {
+                getLucktChose++;
             }
-            StandartluckyChans = Math.pow(luckyChans, GetLucktChose + 1);
+            standartluckyChans = Math.pow(luckyChans, getLucktChose + 1);
         }
-        return GetLucktChose;
+        return getLucktChose;
     };
     LuckBooster.prototype.getBoosterLoot = function (playerInventory) {
+        var local_base_volume = this.base_volume;
+        var local_second_volume = this.second_volume;
         var counter = 0;
         var i;
-        while ((this.base_volume + this.second_volume > 0)) {
-            var GetLucktChose = this.ValumeLucktChose(this.rarity, this.luckyChans);
+        while ((local_base_volume + local_second_volume > 0)) {
+            var getLucktChose = this.ValumeLucktChose(this.rarity, this.luckyChans);
             i = getRandomItem(32);
-            if ((itemsBase[i].rarity == this.rarity + GetLucktChose) && (this.base_volume > 0)) {
-                this.base_volume--;
+            if ((itemsBase[i].rarity == this.rarity + getLucktChose) && (local_base_volume > 0)) {
+                local_base_volume--;
                 this.ThisFunktion[counter] = itemsBase[i];
                 counter++;
                 playerInventory[i]++;
-                console.log('Add_raryty ' + this.base_volume + ', raryti ' + itemsBase[i].rarity + ', Luck ' + GetLucktChose);
+                console.log('Add_raryty ' + local_base_volume + ', raryti ' + itemsBase[i].rarity +
+                    ', Luck ' + getLucktChose + ' № ' + i);
             }
-            if ((itemsBase[i].rarity == this.rarity + 1 + GetLucktChose) && (this.second_volume > 0)) {
-                this.second_volume--;
+            if ((itemsBase[i].rarity == this.rarity + 1 + getLucktChose) && (local_second_volume > 0)) {
+                local_second_volume--;
                 this.ThisFunktion[counter] = itemsBase[i];
                 counter++;
                 playerInventory[i]++;
-                console.log('Add_raryty+1 ' + this.second_volume + ', raryti ' + itemsBase[i].rarity + ', Luck ' + GetLucktChose);
+                console.log('Add_raryty+1 ' + local_second_volume + ', raryti ' + itemsBase[i].rarity +
+                    ', Luck ' + getLucktChose + ' № ' + i);
             }
         }
         return this.ThisFunktion;
@@ -158,38 +165,37 @@ var UniformBooster = /** @class */ (function (_super) {
     UniformBooster.prototype.getBoosterLoot = function (playerInventory) {
         var counter = 0;
         var i;
-        if (this.base_volume + this.second_volume < 4) {
+        var local_base_volume = this.base_volume;
+        var local_second_volume = this.second_volume;
+        if (local_base_volume + local_second_volume < 4) {
             throw new Error('Равномерный бустер не может быть меньше четырёх');
         }
-        var UniformTrafaret = [false, false, false, false];
+        var uniformTrafaret = [false, false, false, false];
         var j = 0;
-        while ((this.base_volume + this.second_volume > 0)) {
+        while ((local_base_volume + local_second_volume > 0)) {
             //console.log(j);
             i = getRandomItem(32);
-            if ((UniformTrafaret[itemsBase[i].itemType] == false) || (j == 4)) {
-                var GetLucktChose = 0;
-                if (Math.random() < this.luckyChans) {
-                    GetLucktChose = 1;
-                }
-                if ((itemsBase[i].rarity == this.rarity + GetLucktChose) && (this.base_volume > 0)) {
-                    this.base_volume--;
+            if ((uniformTrafaret[itemsBase[i].itemType] == false) || (j == 4)) {
+                var getLucktChose = this.ValumeLucktChose(this.rarity, this.luckyChans);
+                if ((itemsBase[i].rarity == this.rarity + getLucktChose) && (local_base_volume > 0)) {
+                    local_base_volume--;
                     this.ThisFunktion[counter] = itemsBase[i];
                     counter++;
                     playerInventory[i]++;
                     j++;
-                    console.log('Add_raryty ' + this.base_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
-                        + ' ItemType is exist ' + UniformTrafaret[itemsBase[i].itemType]);
-                    UniformTrafaret[itemsBase[i].itemType] = true;
+                    console.log('Add_raryty ' + local_base_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
+                        + ' ItemType is exist ' + uniformTrafaret[itemsBase[i].itemType] + ' № ' + i);
+                    uniformTrafaret[itemsBase[i].itemType] = true;
                 }
-                if ((itemsBase[i].rarity == this.rarity + 1 + GetLucktChose) && (this.second_volume > 0)) {
-                    this.second_volume--;
+                if ((itemsBase[i].rarity == this.rarity + 1 + getLucktChose) && (local_second_volume > 0)) {
+                    local_second_volume--;
                     this.ThisFunktion[counter] = itemsBase[i];
                     counter++;
                     playerInventory[i]++;
                     j++;
-                    console.log('Add_raryty ' + this.base_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
-                        + ' ItemType is exist ' + UniformTrafaret[itemsBase[i].itemType]);
-                    UniformTrafaret[itemsBase[i].itemType] = true;
+                    console.log('Add_raryty ' + local_second_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
+                        + ' ItemType is exist ' + uniformTrafaret[itemsBase[i].itemType] + ' № ' + i);
+                    uniformTrafaret[itemsBase[i].itemType] = true;
                 }
             }
         }
@@ -197,30 +203,144 @@ var UniformBooster = /** @class */ (function (_super) {
     };
     return UniformBooster;
 }(LuckBooster));
+var CollectionBooster = /** @class */ (function (_super) {
+    __extends(CollectionBooster, _super);
+    function CollectionBooster(settings) {
+        return _super.call(this, settings) || this;
+    }
+    CollectionBooster.prototype.getSizeInventory = function (playerInventory) {
+        var j = 0;
+        for (var i = 1; i < 33; i++) {
+            j += playerInventory[i];
+        }
+        return j;
+    };
+    CollectionBooster.prototype.FilterByProportion = function (playerInventory, i) {
+        var SizeInventory = this.getSizeInventory(playerInventory); //общее количество предметов в инвентаре
+        var ItemCount = playerInventory[i];
+        if (ItemCount == 0) {
+            return true;
+        }
+        else {
+            if (ItemCount / SizeInventory < Math.random())
+                return true;
+            else
+                return false;
+        }
+    };
+    CollectionBooster.prototype.getBoosterLoot = function (playerInventory) {
+        var counter = 0;
+        var i;
+        var local_base_volume = this.base_volume;
+        var local_second_volume = this.second_volume;
+        if (local_base_volume + local_second_volume < 4) {
+            throw new Error('Равномерный бустер не может быть меньше четырёх');
+        }
+        var uniformTrafaret = [false, false, false, false];
+        var j = 0;
+        while ((local_base_volume + local_second_volume > 0)) {
+            //console.log(j);
+            i = getRandomItem(32);
+            if ((uniformTrafaret[itemsBase[i].itemType] == false) || (j == 4) && this.FilterByProportion(playerInventory, i)) {
+                var getLucktChose = this.ValumeLucktChose(this.rarity, this.luckyChans);
+                if ((itemsBase[i].rarity == this.rarity + getLucktChose) && (local_base_volume > 0)) {
+                    local_base_volume--;
+                    this.ThisFunktion[counter] = itemsBase[i];
+                    counter++;
+                    playerInventory[i]++;
+                    j++;
+                    console.log('Add_raryty ' + local_base_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
+                        + ' ItemType is exist ' + uniformTrafaret[itemsBase[i].itemType] + ' № ' + i);
+                    uniformTrafaret[itemsBase[i].itemType] = true;
+                }
+                if ((itemsBase[i].rarity == this.rarity + 1 + getLucktChose) && (local_second_volume > 0)) {
+                    local_second_volume--;
+                    this.ThisFunktion[counter] = itemsBase[i];
+                    counter++;
+                    playerInventory[i]++;
+                    j++;
+                    console.log('Add_raryty ' + local_second_volume + ', raryti ' + itemsBase[i].rarity + ' Item Type ' + itemsBase[i].itemType
+                        + ' ItemType is exist ' + uniformTrafaret[itemsBase[i].itemType] + ' № ' + i);
+                    uniformTrafaret[itemsBase[i].itemType] = true;
+                }
+            }
+        }
+        return this.ThisFunktion;
+    };
+    return CollectionBooster;
+}(UniformBooster));
 var boostersBase = {
     1: new Booster({ rarity: RARITY.RARE, base_volume: 3, second_volume: 2 }),
     2: new Booster({ rarity: RARITY.LEGENDARY, base_volume: 3, second_volume: 1 }),
     3: new LuckBooster({ rarity: RARITY.RARE, base_volume: 3, second_volume: 2, luckyChans: 0.10 }),
-    4: new LuckBooster({ rarity: RARITY.COMMON, base_volume: 3, second_volume: 1, luckyChans: 0.95 }),
+    4: new LuckBooster({ rarity: RARITY.LEGENDARY, base_volume: 3, second_volume: 1, luckyChans: 0.45 }),
     5: new UniformBooster({ rarity: RARITY.RARE, base_volume: 3, second_volume: 2, luckyChans: 0.10 }),
-    6: new UniformBooster({ rarity: RARITY.LEGENDARY, base_volume: 3, second_volume: 1, luckyChans: 0.45 })
+    6: new UniformBooster({ rarity: RARITY.LEGENDARY, base_volume: 3, second_volume: 1, luckyChans: 0.45 }),
+    7: new CollectionBooster({ rarity: RARITY.RARE, base_volume: 3, second_volume: 2, luckyChans: 0.10 }),
+    8: new CollectionBooster({ rarity: RARITY.LEGENDARY, base_volume: 3, second_volume: 1, luckyChans: 0.45 })
     // пример добавления экземпляра бустерпака 
 };
 function getBoosterLoot(boosterID, playerInventory) {
     return boostersBase[boosterID].getBoosterLoot(playerInventory);
     //return boosters[boosterID].getBoosterLoot(playerInventory); 
 }
-console.log();
-var SomeInventory_1 = {};
-for (var i = 1; i < 33; i++) {
-    SomeInventory_1[i] = 0;
+function someInventoryInitialise(playerInventory) {
+    for (var i = 1; i < 33; i++) {
+        playerInventory[i] = 0;
+    }
+    return playerInventory;
+    //return boosters[boosterID].getBoosterLoot(playerInventory); 
 }
+function someInventoryLog(playerInventory) {
+    var j = 0;
+    var console_bufer = '';
+    for (var i = 1; i < 33; i++) {
+        //console.log(playerInventory[i]);
+        console_bufer += playerInventory[i] + ' ';
+        j += playerInventory[i];
+    }
+    console.log(console_bufer);
+    console.log('summa ' + j);
+    console.log();
+    console.log('////////////////');
+}
+console.log();
+console.log('////////////////');
+var SomeInventory_1 = {};
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(1, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(2, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(3, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
 getBoosterLoot(4, SomeInventory_1);
-var j = 0;
-for (var i = 1; i < 33; i++) {
-    //console.log(SomeInventory_1[i]);
-    j += SomeInventory_1[i];
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(5, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(6, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(7, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+SomeInventory_1 = someInventoryInitialise(SomeInventory_1);
+getBoosterLoot(8, SomeInventory_1);
+someInventoryLog(SomeInventory_1);
+/*
+for(let i: number = 4;i>0;i--){
+    getBoosterLoot(8, SomeInventory_1);
+}
+
+let j: number = 0;
+for(let i: number = 1; i<33; i++){
+    console.log(SomeInventory_1[i]);
+    j+=SomeInventory_1[i];
 }
 console.log('j');
 console.log(j);
-//*/
+//*/ 
